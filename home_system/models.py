@@ -13,7 +13,7 @@ class SchoolInformation(models.Model):
     telephone_number4 = models.CharField(max_length=40)
     email = models.EmailField()
     alternative_email = models.EmailField()
-    type = models.CharField(max_length=20)
+    school_type = models.CharField(max_length=20)
     facebook = models.URLField()
     instagram = models.URLField()
     twitter_x = models.URLField()
