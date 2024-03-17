@@ -29,6 +29,7 @@ def permision_dennied_login(request):
 ### CREATE USER #### Solo se crea. El admin solo puede modificar y eliminar los datos
 
 def create_user(request):
+    """Creacion de un usuario"""
     try:
         if request.method == "POST":
             dni = int(request.POST["dni"])
@@ -47,7 +48,7 @@ def create_user(request):
     except:
         return render(request,"sign_up.html")
         
-### Todos los "CREATE"
+### SCHOOL INFORMATION ###
 
 def create_school_information(request):
     """Se sube la informacion de la escuela"""
@@ -86,8 +87,54 @@ def create_school_information(request):
                 else:
                     return render(request,"create_school_information.html")
             else:
-                return redirect("permision_dennied_login")      
+                return redirect("permision_dennied")    
         else:
-            return redirect("permision_dennied")        
+            return redirect("permision_dennied_login")   
+                   
     except:
         return render(request,"create_school_information.html")
+    
+
+def update_school_information(request):
+    """Se edita la informacion de la escuela"""
+    try:
+        if request.session['active'] == True:
+            if request.session['position'] == "admin":
+                school = SchoolInformation.objects.get(id=1)
+                context = {"school":school}
+                if request.method == "POST":
+                    school.school_logo = request.FILES.get("school_logo")
+                    school.name = request.POST["name"]
+                    school.address = request.POST["address"]
+                    school.district = request.POST["district"]
+                    school.locality = request.POST["telephone_number"]
+                    school.telephone_number = request.POST["telephone_number"]
+                    school.telephone_number2 = request.POST["telephone_number2"]
+                    school.telephone_number3 = request.POST["telephone_number3"]
+                    school.telephone_number4 = request.POST["telephone_number4"]
+                    school.email = request.POST["email"]
+                    school.alternative_email = request.POST["alternative_email"]
+                    school.school_type = request.POST["school_type"]
+                    school.facebook = request.POST["facebook"]
+                    school.instagram = request.POST["instagram"]
+                    school.twitter_x = request.POST["twitter_x"]
+                    school.linkedin = request.POST["linkedin"]
+                    school.youtube = request.POST["youtube"]
+                    school.telegram = request.POST["telegram"]
+                    school.whatsapp = request.POST["whatsapp"]
+                    school.web_site = request.POST["web_site"]
+
+                    school.save()
+                    details = request.POST.dict()
+
+                    ActionsHistory.objects.create(date=datetime.datetime.now(),details=details,action_type="Modificacion de Informacion de Escuela")
+                    return redirect("home")
+                else:
+                    return render(request,"update_school_information.html",context)
+            else:
+                return redirect("permision_dennied")  
+        else:
+            return redirect("permision_dennied_login")  
+    except:
+        return render(request,"update_school_information.html",context)
+
