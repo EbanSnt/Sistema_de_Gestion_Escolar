@@ -30,7 +30,7 @@ class SchoolUsers(models.Model):
     password = models.CharField(max_length=254) 
     email = models.EmailField()
     active = models.BooleanField(default=False)
-
+    position = models.CharField(max_length=30)
 
 class SchoolStaff(models.Model):
     profile_photo = models.ImageField(upload_to="school_staff_members/",default='images/user.png')
