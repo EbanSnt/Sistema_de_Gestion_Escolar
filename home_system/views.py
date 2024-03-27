@@ -1,45 +1,29 @@
 from django.shortcuts import render,redirect
-from django.utils import timezone
-from django.contrib.sessions.middleware import SessionMiddleware
+
 from .models import ActionsHistory,Attendances,Grades,SchoolInformation,SchoolStaff,SchoolUsers,SchoolYear,StudentFile,Students,StudentsPayments,Subjects
-import datetime
-
-
-### MIDDLEWARE PARA CERRA SESION DESPUES DE CIERTO TIEMPO DE INACTIVIDAD ####
-
-class SessionTimeoutMiddleware(SessionMiddleware):
-    def process_request(self, request):
-        super().process_request(request)
-        
-        # Obtener la marca de tiempo de la última actividad del usuario
-        last_activity = request.session.get('last_activity')
-        if last_activity:
-            session_age = request.session.get_expiry_age()
-            if timezone.now() > last_activity + timezone.timedelta(seconds=session_age):
-                # Si ha pasado más tiempo del definido en SESSION_COOKIE_AGE desde la última actividad, cerrar la sesión
-                request.session.flush()
-
-        # Actualizar la marca de tiempo de la última actividad del usuario
-        request.session['last_activity'] = timezone.now()
-
+from datetime import datetime
+import json
 
 ### TEMPLATES "LOGIN, SIGN UP, HOME Y PERMISSION DENNIED" ###
 
 def login(request):
     if request.method == "POST":
+        print(request)
         username = request.POST["username"]
         password = request.POST["password"]
-        user = SchoolUsers.objects.filter(username=username,password=password)
-        if user.active == False:
-            return render(request,"login.html",{"mensaje":"El usuario no se encuentra activado"})
-        elif not user:
-            return render(request,"login.html",{"mensaje":"Usuario y/o contraseña incorrecto/s"})
+        users = SchoolUsers.objects.filter(username=username,password=password)
+        if users.exists():
+            user = users.first() 
+            if not user.active:
+                return render(request,"login.html",{"mensaje":"El usuario no se encuentra activado"})
+            else:
+                request.session['active'] = True
+                request.session['username'] = user.username
+                request.session['position'] = user.position
+                request.session['dni'] = user.dni
+                return redirect("home")
         else:
-            request.session['active'] = True
-            request.session['username'] = user.username
-            request.session['position'] = user.position
-            request.session['dni'] = user.dni
-            return redirect("home")
+            return render(request,"login.html",{"mensaje":"Usuario y/o contraseña incorrecto/s"})
 
     return render(request,"login.html")
 
@@ -50,6 +34,14 @@ def logout_session(request):
 
 
 def sign_up(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        dni = request.POST["dni"]
+        email = request.POST["email"]
+        position = request.POST["position"]
+        SchoolUsers.objects.create(username=username,password=password,dni=dni,email=email,position=position)
+        return redirect("login")
     return render(request,"sign_up.html")
 
 
@@ -82,7 +74,10 @@ def create_user(request):
 
             details = f"Creacion de usuario\nNombre: {username}. DNI: {dni}. Email: {email}"
 
-            ActionsHistory.objects.create(date=datetime.datetime.now(),details=details,action_type="Creacion de Usuario")
+            actual_date = datetime.now()
+            formatted_datetime = actual_date.isoformat()
+
+            ActionsHistory.objects.create(date=formatted_datetime,details=details,action_type="Creacion de Usuario")
             return redirect("login.html")
         else:
             return render(request,"sign_up.html")
@@ -122,7 +117,10 @@ def create_school_information(request):
 
                     details = {"name":name,"address":address,"district":district,"locality":locality,"telephone_number":telephone_number,"telephone_number2":telephone_number2,"telephone_number3":telephone_number3,"telephone_number4":telephone_number4,"email":email,"alternative_email":alternative_email,"school_type":school_type,"facebook":facebook,"instagram":instagram,"twitter_x":twitter_x,"linkedin":linkedin,"youtube":youtube,"telegram":telegram,"whatsapp":whatsapp,"web_site":web_site}
 
-                    ActionsHistory.objects.create(date=datetime.datetime.now(),details=details,action_type="Suba de Informacion acerca de la Escuela")
+                    actual_date = datetime.now()
+                    formatted_datetime = actual_date.isoformat()
+            
+                    ActionsHistory.objects.create(date=formatted_datetime,details=details,action_type="Suba de Informacion acerca de la Escuela")
 
                     return redirect("home")
                 else:
@@ -167,8 +165,11 @@ def update_school_information(request):
 
                     school.save()
                     details = request.POST.dict()
+                    
+                    actual_date = datetime.now()
+                    formatted_datetime = actual_date.isoformat()
 
-                    ActionsHistory.objects.create(date=datetime.datetime.now(),details=details,action_type="Modificacion de Informacion de Escuela")
+                    ActionsHistory.objects.create(date=formatted_datetime,details=details,action_type="Modificacion de Informacion de Escuela")
                     return redirect("home")
                 else:
                     return render(request,"update_school_information.html",context)

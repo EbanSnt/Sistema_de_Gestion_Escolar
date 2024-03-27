@@ -1,11 +1,63 @@
 <!DOCTYPE html>
+<!-- Created By CodingLab - www.codinglabweb.com -->
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    {% load static %}
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <form action="{}"></form>
-</body>
+     <title>Registrarse</title> 
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
+  </head>
+  <body>
+    <div class="container">
+      <div class="wrapper">
+        <div class="title"><span>Iniciar Sesion</span></div>
+        <form action="{% url 'sign_up' %}" method="post">
+          {% csrf_token %}
+          <div class="row">
+            <i class="fa-solid fa-id-card"></i>
+            <input type="number" placeholder="DNI" required name="dni">
+          </div>
+
+          <div class="row">
+            <i class="fas fa-user"></i>
+            <input type="text" placeholder="Usuario" required name="username">
+          </div>
+
+          <div class="row">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="text" placeholder="Email" required name="email">
+          </div>
+
+          
+          <div class="row">
+            <i class="fa-solid fa-clipboard-user"></i>
+            <select name="position" id="">
+                <option value="Profesor">Profesor</option>
+                <option value="Preceptor">Preceptor</option>
+                <option value="Personal de Limpieza">Personal de Limpieza</option>
+                <option value="Director">Director</option>
+                <option value="Vicedirector">Vicedirector</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+                <option value="Personal Medico">Personal Medico</option>
+                <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <i class="fas fa-lock"></i>
+            <input type="password" placeholder="Contraseña" required name="password">
+          </div>
+
+          <div class="row button">
+            <input type="submit">
+          </div>
+
+          <div class="signup-link"><a href="{% url 'login' %}">Tienes cuenta? Inicia Sesion</a></div>
+        </form>
+      </div>
+    </div>
+
+  </body>
 </html>
